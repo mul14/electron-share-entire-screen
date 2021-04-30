@@ -11,50 +11,56 @@
 <body>
   <h1>Electron Share Screen</h1>
 
+  <div>
+    <button onclick="capture('camera')">Camera</button>
+    <button onclick="capture('screen')">Screen</button>
+  </div>
+
   <video src="" width="600" height="480" style="background: black;"></video>
 
   <script>
     const { desktopCapturer } = require("electron");
 
-    desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+    function capture(mediaType) {
+      desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
 
-      try {
-        const audioConstraint = { audio: true };
+        try {
+          const audioConstraint = { audio: true };
 
-        const videoConstraint = {
-          audio: false,
-          video: {
-            mandatory: {
-              chromeMediaSource: 'desktop',
-              chromeMediaSourceId: sources[0].id,
+          let constraint = true;
+
+          if (mediaType === 'screen') {
+            constraint = {
+              mandatory: {
+                chromeMediaSource: 'desktop',
+                chromeMediaSourceId: sources[0].id,
+              }
             }
           }
-        };
 
-        const audioStream = await navigator.mediaDevices.getUserMedia(audioConstraint)
-        const videoStream = await navigator.mediaDevices.getUserMedia(videoConstraint)
+          const videoConstraint = {
+            audio: false,
+            video: constraint,
+          };
 
-        const stream = new MediaStream([
-          ...videoStream.getVideoTracks(),
-          ...audioStream.getAudioTracks(),
-        ]);
+          const audioStream = await navigator.mediaDevices.getUserMedia(audioConstraint)
+          const videoStream = await navigator.mediaDevices.getUserMedia(videoConstraint)
 
-        handleStream(stream)
-      } catch (e) {
-        handleError(e)
-      }
-      return
-    })
+          const stream = new MediaStream([
+            ...videoStream.getVideoTracks(),
+            ...audioStream.getAudioTracks(),
+          ]);
 
-    function handleStream(stream) {
-      const video = document.querySelector('video');
-      video.srcObject = stream;
-      video.onloadedmetadata = (e) => video.play();
+          const video = document.querySelector('video');
+          video.srcObject = stream;
+          video.onloadedmetadata = (e) => video.play();
+        } catch (error) {
+          console.log(error)
+        }
+        return
+      })
     }
 
-    function handleError(e) {
-      console.log(e);
-    }
   </script>
 
 </body>
