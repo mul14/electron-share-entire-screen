@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electron Share Screen</title>
+</head>
+
+<body>
+  <h1>Electron Share Screen</h1>
+
+  <video src="" width="600" height="480" style="background: black;"></video>
+
+  <script>
+    const { desktopCapturer } = require("electron");
+
+    desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+
+      try {
+        const audioConstraint = { audio: true };
+
+        const videoConstraint = {
+          audio: false,
+          video: {
+            mandatory: {
+              chromeMediaSource: 'desktop',
+              chromeMediaSourceId: sources[0].id,
+            }
+          }
+        };
+
+        const audioStream = await navigator.mediaDevices.getUserMedia(audioConstraint)
+        const videoStream = await navigator.mediaDevices.getUserMedia(videoConstraint)
+
+        const stream = new MediaStream([
+          ...videoStream.getVideoTracks(),
+          ...audioStream.getAudioTracks(),
+        ]);
+
+        handleStream(stream)
+      } catch (e) {
+        handleError(e)
+      }
+      return
+    })
+
+    function handleStream(stream) {
+      const video = document.querySelector('video');
+      video.srcObject = stream;
+      video.onloadedmetadata = (e) => video.play();
+    }
+
+    function handleError(e) {
+      console.log(e);
+    }
+  </script>
+
+</body>
+
+</html>
