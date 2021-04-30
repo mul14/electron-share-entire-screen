@@ -11,10 +11,12 @@
 <body>
   <h1>Electron Share Screen</h1>
 
-  <div>
+  <p>
     <button onclick="capture('camera')">Camera</button>
     <button onclick="capture('screen')">Screen</button>
-  </div>
+    <button onclick="videoOff()">Video off</button>
+    <button onclick="toggleAudio()">Audio Toggle</button>
+  </p>
 
   <video src="" width="600" height="480" style="background: black;"></video>
 
@@ -44,7 +46,7 @@
           };
 
           const audioStream = await navigator.mediaDevices.getUserMedia(audioConstraint)
-          const videoStream = await navigator.mediaDevices.getUserMedia(videoConstraint)
+          const videoStream = await navigator.mediaDevices.getUserMedia(videoConstraint);
 
           const stream = new MediaStream([
             ...videoStream.getVideoTracks(),
@@ -59,6 +61,21 @@
         }
         return
       })
+    }
+
+    function videoOff() {
+      const video = document.querySelector('video')
+      video.pause();
+      video.srcObject?.getVideoTracks()?.forEach(videoTrack => videoTrack.stop());
+      video.srcObject = null;
+    }
+
+    function toggleAudio() {
+      const video = document.querySelector('video');
+      video.srcObject?.getAudioTracks()?.forEach(audioTrack => {
+        audioTrack.enabled = !audioTrack.enabled
+        console.log('Audio enabled', audioTrack.enabled)
+      });
     }
 
   </script>
